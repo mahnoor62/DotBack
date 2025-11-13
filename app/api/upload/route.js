@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentAdmin } from "@/lib/auth";
 import path from "path";
 import { promises as fs } from "fs";
+import sharp from "sharp";
 
 export const runtime = "nodejs";
 
@@ -21,9 +22,33 @@ export async function POST(request) {
     );
   }
 
-  if (file.size > 2 * 1024 * 1024) {
+  const maxFileSizeBytes = 1 * 1024 * 1024; // 1MB
+
+  if (file.size > maxFileSizeBytes) {
     return NextResponse.json(
-      { message: "File size must be under 2MB." },
+      { message: "File size must not exceed 1MB." },
+      { status: 400 }
+    );
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  // Validate image dimensions
+  try {
+    const metadata = await sharp(buffer).metadata();
+    const maxWidth = 1080;
+    const maxHeight = 400;
+
+    if (metadata.width > maxWidth || metadata.height > maxHeight) {
+      return NextResponse.json(
+        { message: `Image dimensions must not exceed ${maxWidth}x${maxHeight} pixels. Current size: ${metadata.width}x${metadata.height}` },
+        { status: 400 }
+      );
+    }
+  } catch (error) {
+    // If sharp can't process it, it might not be a valid image
+    return NextResponse.json(
+      { message: "Invalid image file. Please upload a valid image." },
       { status: 400 }
     );
   }
@@ -36,7 +61,6 @@ export async function POST(request) {
   const fileName = `${uniqueSuffix}-${sanitizedName}`;
   const filePath = path.join(uploadsDir, fileName);
 
-  const buffer = Buffer.from(await file.arrayBuffer());
   await fs.writeFile(filePath, buffer);
 
   const publicPath = `/uploads/${fileName}`;
