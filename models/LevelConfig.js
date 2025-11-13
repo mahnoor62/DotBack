@@ -1,0 +1,46 @@
+import mongoose, { Schema } from "mongoose";
+
+const LevelConfigSchema = new Schema(
+  {
+    level: {
+      type: Number,
+      required: true,
+      unique: true,
+      min: 1,
+      max: 10,
+    },
+    backgroundColor: {
+      type: String,
+      default: "#ffffff",
+    },
+    dot1Color: {
+      type: String,
+      default: "#66c2ff",
+    },
+    dot2Color: {
+      type: String,
+      default: "#99e6ff",
+    },
+    dot3Color: {
+      type: String,
+      default: "#b3f0ff",
+    },
+    dot4Color: {
+      type: String,
+      default: "#ccf5ff",
+    },
+    dot5Color: {
+      type: String,
+      default: "#e6fbff",
+    },
+    logoUrl: {
+      type: String,
+      default: "",
+    },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.models.LevelConfig ||
+  mongoose.model("LevelConfig", LevelConfigSchema);
+

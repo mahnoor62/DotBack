@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## DotBack Admin Dashboard
 
-## Getting Started
+DotBack is a single-page administrative dashboard built with Next.js (App Router), MongoDB, and Material UI. It lets an administrator configure 10 DotBack levels, each with custom background colors, dot palettes, and branded logos. Authentication is handled server-side with signed cookies and MongoDB-stored credentials.
 
-First, run the development server:
+### Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js App Router with server components
+- MongoDB via Mongoose
+- Material UI v5 with custom light/dark themes
+- JSON Web Tokens stored as HTTP-only cookies
+
+### Project Structure Overview
+
+- `app/` – App Router pages and API routes (`/api/auth`, `/api/levels`, `/api/upload`)
+- `components/` – Reusable UI modules (dashboard, auth, layout, theme registry)
+- `lib/` – Database connection, auth helpers, initial seed logic, level services
+- `models/` – Mongoose schemas (`Admin`, `LevelConfig`)
+- `public/uploads/` – Local logo uploads (auto-created)
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB running locally (`MONGO_URL=mongodb://127.0.0.1:27017/DotBack`)
+
+### Environment Variables
+
+Create a `.env.local` file at the project root:
+
+```
+MONGO_URL=mongodb://127.0.0.1:27017/DotBack
+JWT_SECRET=change_me_to_a_secure_secret
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`JWT_SECRET` should be a long, random string. `MONGO_URL` defaults to the value above if omitted.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Install & Run
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Visit `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+### Default Admin & Data Seeding
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+During the first request the app seeds MongoDB with the default admin credentials only:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Email: `admin@dotback.com`  
+- Password: `dotback123`
 
-## Deploy on Vercel
+Create levels directly from the dashboard; each new level is stored immediately. Change the seeded admin password after launching in production by updating the database record (or adjust the default in `lib/seed.js` before deployment).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Local Logo Uploads
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Uploaded logos are persisted to `public/uploads` and referenced via relative URLs (e.g. `/uploads/123-logo.png`). When deploying to serverless platforms, replace the upload implementation with persistent storage (S3, Cloudinary, etc.).
+
+### Scripts
+
+- `npm run dev` – Start development server
+- `npm run build` – Create production build
+- `npm start` – Run production server
+- `npm run lint` – Run Next.js / ESLint checks
+
+### Notes
+
+- The dashboard is portrait-friendly and responsive, optimized for 1080×1920 layouts.
+- Authentication restricts API and page access to the signed-in admin.
+- Theme preference (light/dark) persists across sessions via localStorage.
+- MongoDB indexes are created through Mongoose schema definitions.
